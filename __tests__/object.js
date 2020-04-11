@@ -42,6 +42,7 @@ describe('object', () => {
       const result = schema.validateSync(value);
 
       isValidWithoutErrors(result);
+      expect(result.value).toEqual({ isActive: true, num: 123 });
     });
 
     it('should cast all nested level 2 keys validation', () => {
@@ -62,6 +63,37 @@ describe('object', () => {
       const result = schema.validateSync(value);
 
       isValidWithoutErrors(result);
+      const expectedValue = {
+        isActive: true,
+        num: 123,
+        data: { id: 5 },
+      };
+      expect(result.value).toEqual(expectedValue);
+    });
+
+    it('should cast the keys that needs to', () => {
+      const value = {
+        username: 'john',
+        email: 'john.doe@g.co',
+        password: 'pwd123',
+        age: '32',
+      };
+
+      const schema = v.object({
+        username: v.string().min(3).max(30).required(),
+        email: v.string().min(5).max(255).required().email(),
+        password: v.string().min(5).max(255).required(),
+        age: v.number().cast().min(0).max(200),
+      });
+
+      const result = schema.validateSync(value);
+
+      isValidWithoutErrors(result);
+      const expectedValue = {
+        ...value,
+        age: 32,
+      };
+      expect(result.value).toEqual(expectedValue);
     });
   });
 
